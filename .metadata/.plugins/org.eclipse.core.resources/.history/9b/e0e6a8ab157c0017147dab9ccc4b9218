@@ -1,0 +1,130 @@
+package bank.management.system;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+/**
+ * This class is the superclass of Deposit and Withdraw.
+ * It stores the GUI components common to both classes.
+ * @author Albert JK
+ *
+ */
+public class DepositWithdrawGUI extends JFrame  {
+	
+	
+	
+	/**
+	 * Frame constants
+	 */
+	public static final int FRAME_WIDTH = 458;
+	public static final int FRAME_HEIGHT = 320;
+	
+	/**
+	 * The height of the search and account number text fields
+	 */
+	private static final int TEXT_FIELD_HEIGHT = 21;
+	
+	/**
+     * This variable is the width of the search text field
+     * It is the length of the account number i.e. 8 digits long
+     */
+    private static final int SEARCH_TEXT_FIELD_WIDTH = 61;
+    
+    /**
+     * Constants used to position the GUI components
+     */
+    private static final int LABEL_X = 15;    
+    private static final int TEXT_FIELD_X = 175;
+	private static final int SEARCH_TEXT_FIELD_X = 195;
+	private static final int SEARCH_TEXT_FIELD_Y = 35;
+	private static final int NAME_LABEL_Y = 110;
+	private static final int NAME_TEXT_FIELD_Y = 108;
+	private static final int ACCOUNT_NUMBER_LABEL_Y = 140;
+	private static final int ACCOUNT_NUMBER_TEXT_FIELD_Y = 138;
+	private static final int CURRENT_BALANCE_LABEL_Y = 170;
+	private static final int CURRENT_BALANCE_TEXT_FIELD_Y = 168;
+	
+	public JTextField searchTextField;
+	
+	public JLabel nameLabel;
+	public JTextField nameTextField;
+	public JLabel accountNumberLabel;
+	public JTextField accountNumberTextField;
+	public JLabel currentBalanceLabel;
+	public JTextField currentBalanceTextField;	
+	
+	public Component createGUI() {
+		
+		// Standard window set up
+		Container window = getContentPane();
+				
+		// the window layout is set as null since we adjust the positions of the GUI components
+		window.setLayout(null);
+		
+		
+		
+		
+		searchTextField = new JTextField("");
+		searchTextField.setBounds(SEARCH_TEXT_FIELD_X, SEARCH_TEXT_FIELD_Y, 
+								SEARCH_TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(searchTextField);
+		
+		
+		
+		nameLabel = new JLabel("Account holder's name:");
+		nameLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		Dimension sizeOfNameLabel = nameLabel.getPreferredSize();
+		nameLabel.setBounds(LABEL_X, NAME_LABEL_Y, sizeOfNameLabel.width, 
+												 sizeOfNameLabel.height);
+		window.add(nameLabel);
+		
+		nameTextField = new JTextField("", 23);
+		Dimension sizeOfNameTextField = nameTextField.getPreferredSize();
+		nameTextField.setBounds(TEXT_FIELD_X, NAME_TEXT_FIELD_Y, 
+				sizeOfNameTextField.width, sizeOfNameTextField.height);
+		nameTextField.setEditable(false); 
+		window.add(nameTextField);
+		
+		accountNumberLabel = new JLabel("Account number:");
+		accountNumberLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		Dimension sizeOfAccountNumberLabel = accountNumberLabel.getPreferredSize();
+		accountNumberLabel.setBounds(LABEL_X, ACCOUNT_NUMBER_LABEL_Y, 
+			 sizeOfAccountNumberLabel.width, sizeOfAccountNumberLabel.height);
+		window.add(accountNumberLabel);
+		
+		accountNumberTextField = new JTextField("");
+		accountNumberTextField.setBounds(TEXT_FIELD_X, ACCOUNT_NUMBER_TEXT_FIELD_Y, 
+								SEARCH_TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		accountNumberTextField.setEditable(false); 
+		window.add(accountNumberTextField);
+		
+		currentBalanceLabel = new JLabel("Current balance:");
+		currentBalanceLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		Dimension sizeOfCurrentBalanceLabel = currentBalanceLabel.getPreferredSize();
+		currentBalanceLabel.setBounds(LABEL_X, CURRENT_BALANCE_LABEL_Y, 
+				sizeOfCurrentBalanceLabel.width, sizeOfCurrentBalanceLabel.height);
+		window.add(currentBalanceLabel);
+		
+		currentBalanceTextField = new JTextField("", 19);
+		Dimension sizeOfCurrentBalanceTextField = currentBalanceTextField.getPreferredSize();
+		currentBalanceTextField.setBounds(TEXT_FIELD_X , CURRENT_BALANCE_TEXT_FIELD_Y, 
+			sizeOfCurrentBalanceTextField.width, sizeOfCurrentBalanceTextField.height);
+		currentBalanceTextField.setEditable(false);
+		window.add(currentBalanceTextField);
+		
+		
+		return window;
+		
+	}
+
+
+}

@@ -1,0 +1,153 @@
+package bank;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import javax.imageio.*;
+
+/**
+ * This is the main user interface of the application 
+ * which the user first sees. Several windows can be opened from the menu 
+ * to perform different banking tasks such as making a new account, updating or
+ * deleting an existing one, or displaying all existing accounts in a table.
+ * Further actions include making a deposit, a withdrawal, 
+ * or a transfer between accounts.
+ * 
+ * @author Albert Jozsa-Kiraly
+ */
+
+public class MainInterface extends JFrame implements ActionListener {	
+	
+    /* Width and height constants of the window */
+    private static final int FRAME_WIDTH = 800;
+    private static final int FRAME_HEIGHT = 490;
+    
+    /* GUI positioning constants  */
+    private static final int MENU_BAR_XY = 0;
+    private static final int MENU_BAR_HEIGHT = 25;
+    private static final int BACKGROUND_PHOTO_X = 15;
+	private static final int BACKGROUND_PHOTO_Y = 40;
+	
+	private String backgroundPhotoURL = "C:/Bank Management System/Bank Management System/src/bank/background.png";
+	
+	/* The JMenuItem components. These are declared as globals, so they can be
+	accessed in multiple methods. These can be clicked to execute different
+	bank services. */  
+    private JMenuItem createNewAccount;
+    private JMenuItem searchAndUpdate;
+    private JMenuItem displayAllAccounts;    
+    private JMenuItem deposit;
+    private JMenuItem withdraw;
+    private JMenuItem transfer;
+	
+    /**
+     * The main launcher method:
+     * Configures the application window, and makes the user interface visible.
+     * @param args
+     */
+	public static void main(String[] args) {
+		MainInterface frame = new MainInterface();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+		frame.setLocationRelativeTo(null);
+		frame.setTitle("Albert's Bank Management System");
+		frame.createGUI();
+		frame.setResizable(false);
+		frame.setVisible(true);
+	}
+		
+    /**
+     * Helper method to build the GUI.
+     * There are 2 menus: Accounts and Transactions.
+     * Under each menu there are menu items.
+     * In the Accounts menu, we can find the Create New, Search and Update,
+     * and Display Table menu items.
+     * In the Transactions menu, we can find the Deposit, Withdraw, and Transfer 
+     * menu items.
+     */
+    private void createGUI() {
+        // Standard window set up
+        Container window = getContentPane();
+        
+        /* The window layout is set to null as we will adjust the positions of
+		components */
+		window.setLayout(null);
+
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.setBounds(MENU_BAR_XY, MENU_BAR_XY, FRAME_WIDTH, MENU_BAR_HEIGHT);
+
+		JMenu accountsMenu = new JMenu("Accounts");
+		menuBar.add(accountsMenu);
+
+		createNewAccount = new JMenuItem("Create New");
+		accountsMenu.add(createNewAccount);
+		createNewAccount.addActionListener(this);
+
+		searchAndUpdate = new JMenuItem("Search and Update");
+		accountsMenu.add(searchAndUpdate);
+		searchAndUpdate.addActionListener(this);
+
+		displayAllAccounts = new JMenuItem("Display Table");
+		accountsMenu.add(displayAllAccounts);
+		displayAllAccounts.addActionListener(this);
+
+		JMenu transactionsMenu = new JMenu("Transactions");
+		menuBar.add(transactionsMenu);
+
+		deposit = new JMenuItem("Deposit");
+		transactionsMenu.add(deposit);
+		deposit.addActionListener(this);
+
+		withdraw = new JMenuItem("Withdraw");
+		transactionsMenu.add(withdraw);
+		withdraw.addActionListener(this);
+
+		transfer = new JMenuItem("Transfer");
+		transactionsMenu.add(transfer);
+		transfer.addActionListener(this);
+        
+        window.add(menuBar);
+        
+        // Load the background image from a file and display it 
+		BufferedImage img = null;
+		try {
+			img = ImageIO.read(new File(backgroundPhotoURL));
+			JLabel backgroundPhoto = new JLabel(new ImageIcon(img));
+			Dimension sizeOfBackgroundPhoto = backgroundPhoto.getPreferredSize();
+			backgroundPhoto.setLocation(BACKGROUND_PHOTO_X, BACKGROUND_PHOTO_Y);
+			backgroundPhoto.setSize(sizeOfBackgroundPhoto.width, sizeOfBackgroundPhoto.height);
+			window.add(backgroundPhoto);
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage());
+		}
+	}
+	
+    /**
+    * Event handler method for clicks on the menu items.     
+    * Actions: 
+    * o Opens window for the creation of a new account
+    * o Opens window for searching, updating, or deleting an existing account
+    * o Opens window which displays all existing accounts in a table
+    * o Opens window to make a cash deposit to an account
+    * o Opens window to make a cash withdrawal from an account
+    * o Opens window to make a cash transfer between two accounts
+    */
+	public void actionPerformed(ActionEvent event) {
+
+		if (event.getSource() == createNewAccount) {
+			CreateAccount.createAccountWindow();
+		} else if (event.getSource() == searchAndUpdate) {
+			SearchUpdateAccount.searchAndUpdateAccountWindow();
+		} else if (event.getSource() == displayAllAccounts) {
+			DisplayTable.displayTableWindow();
+		} else if (event.getSource() == deposit) {
+			Deposit.depositWindow();
+		} else if (event.getSource() == withdraw) {
+			Withdraw.withdrawWindow();
+		} else if (event.getSource() == transfer) {
+			Transfer.transferWindow();
+		}
+	}
+}

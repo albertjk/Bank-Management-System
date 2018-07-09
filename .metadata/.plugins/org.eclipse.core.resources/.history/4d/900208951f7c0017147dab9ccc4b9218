@@ -1,0 +1,608 @@
+package bank.management.system;
+
+import javax.sql.rowset.JdbcRowSet;
+import javax.sql.rowset.RowSetProvider;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.logging.Level;
+
+/**
+ * This is the controller bean class through which
+ * every communication with the database is accomplished.
+ * We also use JdbcRowSet to transfer information between the 
+ * graphical user interface and the database. 
+ * @author Albert Jozsa-Kiraly
+ * 
+ * DATE!!!
+ *
+ */
+public class BankAccountBean {
+	private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";
+	private static final String DB_URL = "jdbc:derby://localhost:1527/CustomerDB";
+	private static final String DB_USERNAME = "albert";
+	private static final String DB_PASSWORD = "123";
+
+	private static final Logger logger = Logger.getAnonymousLogger();
+
+	// This will be used to transfer information between the GUI and the database 
+	private JdbcRowSet rowSet = null;
+
+	/**
+	 * Instantiates a new BankAccountBean.
+	 */
+	public BankAccountBean() {
+		try {
+			// Initialize the jdbc driver class
+			Class.forName(JDBC_DRIVER);
+
+			// Create a new row set
+			rowSet = RowSetProvider.newFactory().createJdbcRowSet();
+
+			rowSet.setUrl(DB_URL);
+			rowSet.setUsername(DB_USERNAME);
+			rowSet.setPassword(DB_PASSWORD);
+			rowSet.setCommand("SELECT * FROM ALBERT.BANKACCOUNT"); 
+			rowSet.execute(); 
+		}
+		catch(ClassNotFoundException | SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+	}
+
+//	/**
+//	 * Gets the row set of BankAccountBean
+//	 * @return the row set
+//	 */
+//	public JdbcRowSet getRowSet() {
+//		return this.rowSet;
+//	}
+
+	/**
+	 * Creates a new bank account and adds it to the database.
+	 * Assigns a new ID to the customer.
+	 * @param account the account to be created and added to the database
+	 */
+	public void createAccount(BankAccount account) {
+		try {			
+			int newID = 0;
+
+			// If there are rows in the table, get the ID from the last row and increment it, so, we get the ID of the new customer account
+			if(rowSet.last())	{
+				newID = rowSet.getInt("PersonID") + 1;
+			}
+			// If the table has no rows, the ID will be 1
+			else if(!rowSet.last()) {
+				rowSet.first();
+				newID = 1;
+			}					
+
+			// Move to a new row and update all cells in the row with the new account data
+			rowSet.moveToInsertRow();
+			rowSet.updateInt("PersonID", newID); // TODO MAYBE CHANGE THIS FIELD TO ACCOUNT ID IN THE TABLE? THEN I WOULD HAVE TO RECREATE THE TABLE. OR RENAME THE BANKACCOUNT CLASS TO CUSTOMER????
+			rowSet.updateString("FirstName", account.getFirstName());
+			rowSet.updateString("LastName", account.getLastName());
+			rowSet.updateString("Gender", account.getGender());
+			rowSet.updateString("DateOfBirth", account.getDateOfBirth());
+			rowSet.updateString("MaritalStatus", account.getMaritalStatus());
+			rowSet.updateString("AddressLine1", account.getAddressLine1());
+			rowSet.updateString("AddressLine2", account.getAddressLine2());
+			rowSet.updateString("AddressLine3", account.getAddressLine3());			
+			rowSet.updateString("PhoneNumber", account.getPhoneNumber()); 
+			rowSet.updateString("AccountType", account.getAccountType());			
+			rowSet.updateString("AccountNumber", account.getAccountNumber()); 
+			rowSet.updateDouble("AccountBalance", account.getBalance()); 
+			rowSet.insertRow(); 
+			rowSet.commit(); // Commit changes to the database
+			//rowSet.close();
+		} catch(SQLException e) {
+
+			//			try {
+			//				// If an exception occurred undo all changes made in the current transaction
+			//				rowSet.rollback(); 
+			//			}
+			//			catch(SQLException ex) {}
+
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		finally {
+			try {
+				rowSet.close();
+			} catch(SQLException e) {
+				logger.log(Level.SEVERE, "Exception ", e);
+			}
+		}
+	}
+
+	/**
+	 * This method generates eight random numbers between 0 and 9 inclusive, 
+	 * converts them to strings, and concatenates them which will result in 
+	 * a new random account number to allocate to the new account when it is 
+	 * created. The method also checks whether the generated number is 
+	 * already allocated to a customer in the database. 
+	 * If so, it generates a new number.
+	 * @return the final account number
+	 */
+	public String generateRandomAccountNumber() {
+		String randomAccountNumber = null;
+		try	{ 
+			// Hold 8 random numbers
+			String[] randomNumbers = new String[8];
+
+			/* Generate 8 random numbers, convert them to strings, 
+             and put them into the array. */
+			for(int i = 0; i < 8; i++) {
+				int randomNumber = (int)(Math.random() * (9 - 0 + 1) + 0);
+				randomNumbers[i] = String.valueOf(randomNumber);
+			}
+
+			/* Concatenate the array elements to make a single string 
+            which will be the final account number. */
+			StringBuilder builder = new StringBuilder();			
+			for(int j = 0; j < 8; j++) {
+				builder.append(randomNumbers[j]);
+			}				
+			randomAccountNumber = builder.toString();
+
+			/* Check whether the new account number 
+            is already allocated to a customer or not */
+
+
+			// Move to the last row and get the number of rows
+			rowSet.last();
+			int numberOfRows = rowSet.getRow();
+
+
+			// If there are multiple rows in the database,
+			if(numberOfRows > 0) {
+				/* Loop through all the existing rows and check 
+				 whether the randomly generated account number 
+				 is already allocated to an account */
+				for(int i = 1; i <= numberOfRows; i++) {
+					rowSet.absolute(i); 
+
+					/* if the generated account number is already in the database 
+					then generate a new one */
+					if(rowSet.getString("AccountNumber").equals(randomAccountNumber)) {
+						generateRandomAccountNumber();
+					}
+					/* if the new account number is not yet in the database 
+					then assign it to the uniqueAccountNumber variable which 
+					will be returned at the end of the method and will be 
+					allocated to the new customer */
+					else {
+
+						break; // exit the loop
+					}	
+				}				
+			}			
+			//rowSet.close();		
+
+		}
+		catch(SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		//		finally {
+		//			if(rowSet != null) {
+		//				try {
+		//					rowSet.close();
+		//				}
+		//				catch(SQLException e) {
+		//					logger.log(Level.SEVERE, "Exception ", e);
+		//				}
+		//			}
+		//		}
+		return randomAccountNumber;
+	}
+
+	/**
+	 * Updates (overwrites) a customer account in the database table.
+	 * @param account the account to be updated
+	 */
+	public void updateAccount(BankAccount account) {
+		try {
+			// Update the account data in the rowSet
+			rowSet.updateString("FirstName", account.getFirstName());
+			rowSet.updateString("LastName", account.getLastName());
+			rowSet.updateString("Gender", account.getGender());
+			rowSet.updateString("DateOfBirth", account.getDateOfBirth());
+			rowSet.updateString("MaritalStatus", account.getMaritalStatus());
+			rowSet.updateString("AddressLine1", account.getAddressLine1());
+			rowSet.updateString("AddressLine2", account.getAddressLine2());
+			rowSet.updateString("AddressLine3", account.getAddressLine3());
+			rowSet.updateString("PhoneNumber", account.getPhoneNumber());
+			rowSet.updateString("AccountType", account.getAccountType());
+			rowSet.updateRow(); // Update the database table
+			rowSet.commit();
+		}
+		catch(SQLException e) {
+			//			try {
+			//				// If an exception occurred undo all changes made in the current transaction
+			//				rowSet.rollback();
+			//			}
+			//			catch(SQLException ex) {}
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		finally {
+			if(rowSet != null) {
+				try {
+					rowSet.close();
+				}
+				catch(SQLException e) {
+					logger.log(Level.SEVERE, "Exception ", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Deletes an account from the specified row number in the database.
+	 * Then, it decrements each remaining row's ID by one.
+	 * @param rowNumber where the account to be deleted is
+	 */
+	public void deleteAccount(int rowNumber) {
+		try {
+			// Move to the specified row and delete it from the rowSet
+			rowSet.absolute(rowNumber);
+			rowSet.deleteRow(); 
+			//rowSet.close();
+
+			// Execute an SQL query which returns a single rowSet containing all rows
+			//rowSet.setCommand("SELECT * FROM BankAccount"); 
+
+			// Move to the last row and store the number of rows
+			rowSet.last();
+			int lastRow = rowSet.getRow();
+
+			rowSet.absolute(rowNumber); // Then move back to the previously specified row
+
+			/* Loop through the rows starting from the current row till the last one
+			and decrement each row's ID by one to get the new order */
+			for(int i = rowNumber; i <= lastRow; i++) {
+				rowSet.absolute(i);
+				rowSet.updateInt("PersonID", i); // Update PersonID in the rowSet
+				rowSet.updateRow(); // Update the database	
+				rowSet.commit();
+			}  
+		}
+		catch(SQLException e) {
+			//			try {
+			//				// If an exception occurred undo all changes made in the current transaction
+			//				rowSet.rollback();
+			//			}
+			//			catch(SQLException ex) {}
+			logger.log(Level.SEVERE, "Exception ", e);
+
+		}
+		finally {
+			if(rowSet != null) {
+				try {
+					rowSet.close();
+				}
+				catch(SQLException e) {
+					logger.log(Level.SEVERE, "Exception ", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Stores customer data in a two-dimensional array as rows and columns, and returns it.
+	 * If there is no data yet in the database, an empty array is returned.
+	 * @return the two-dimensional array storing customer data in rows and columns
+	 */
+	public String[][] getCustomerData() {
+		try	{
+			// If there are rows in the database, display the data			
+			if(rowSet.last()) {
+
+				/* Store the number of database rows.
+				i.e. move to the last row and check the PersonID in that row */
+				int lastID = rowSet.getInt("PersonID");
+
+				String[][] customerData = new String[lastID][12];			
+
+				rowSet.beforeFirst(); // Move before the first row so the loop can start with the first row
+
+				// Loop over all the rows and get the data	
+				for(int i = 0; i < lastID; i++) {
+					rowSet.next();
+
+					customerData[i][0] = rowSet.getString("FirstName");
+					customerData[i][1] = rowSet.getString("LastName");
+					customerData[i][2] = rowSet.getString("AccountType");
+					customerData[i][3] = rowSet.getString("AccountNumber");
+					customerData[i][4] = "£" + rowSet.getString("AccountBalance");
+					customerData[i][5] = rowSet.getString("Gender");
+					customerData[i][6] = rowSet.getString("DateOfBirth");
+					customerData[i][7] = rowSet.getString("MaritalStatus");
+					customerData[i][8] = rowSet.getString("AddressLine1");
+					customerData[i][9] = rowSet.getString("AddressLine2");
+					customerData[i][10] = rowSet.getString("AddressLine3");
+					customerData[i][11] = rowSet.getString("PhoneNumber");
+				}
+				//rowSet.close();
+				return customerData;
+			}			
+		}
+		catch(SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+//		finally {
+//			if(rowSet != null) {
+//				try {
+//					rowSet.close();
+//				}
+//				catch(SQLException e) {
+//					logger.log(Level.SEVERE, "Exception ", e);
+//				}
+//			}
+//		}
+		// If there are no rows in the database, return an empty array with space for column names		
+		return new String[0][12];			
+	}	
+
+	/**
+	 * This method takes an account number and searches the database to find the name of the account owner and the account balance.
+	 * @param searchedAccountNumber the searched account number
+	 * @return a string array storing the name of the account owner and the account balance
+	 */
+	public String[] getAccountOwnerName(String searchedAccountNumber) {
+
+		String[] returnedData = new String[2];
+		//returnedData[0] = null; // The name is null by default
+		try	{			
+			// Store the number of table rows
+			rowSet.last();
+			int numberOfRows = rowSet.getInt("PersonID");			
+
+			// Search each row of records for the account number
+			for(int i = 1; i <= numberOfRows; i++) {
+				rowSet.absolute(i); 
+
+				/* If the account number in the current row is the same
+			    as the one that is being searched, the account is found */
+				if(rowSet.getString("AccountNumber").equals(searchedAccountNumber)) {					
+
+					// Store the account holder's name and balance in the array which will be returned at the end of the method
+					returnedData[0] = rowSet.getString("FirstName") + " " + rowSet.getString("LastName");					
+					returnedData[1] = rowSet.getString("AccountBalance");
+
+					//rowSet.close();					
+					break; 
+				}
+			}			
+		}
+		catch(SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		//		finally {
+		//			if(rowSet != null) {
+		//				try {
+		//					rowSet.close();
+		//				}
+		//				catch(SQLException e) {
+		//					logger.log(Level.SEVERE, "Exception ", e);
+		//				}
+		//			}
+		//		}
+		return returnedData;
+	}
+
+	/**
+	 * 
+	 * 
+	 * This method gets the account number from the search text field and finds the customer account in the database.
+	 * 
+	 * Searches the database for an account with the given account number. 
+	 * If the account is found, it displays the account owner's name, 
+	 * account number, and current balance. 
+	 * If the account is not found, a message pops up.
+	 * @param searchedAccountNumber the number of the searched account
+	 */
+	public ArrayList<String> searchAccount(String searchedAccountNumber) {
+		ArrayList<String> accountData = new ArrayList<>();
+
+		try	{					
+			// Move to the last row and get the number of rows
+			rowSet.last();            
+			int numberOfRows = rowSet.getRow();		
+
+
+
+			// Search each row of records for the account number
+			for(int i = 1; i <= numberOfRows; i++) {
+				rowSet.absolute(i); 
+
+				/* If the account number in the current row is the same
+				    as the one that is being searched, the account is found */
+				if(rowSet.getString("AccountNumber").equals(searchedAccountNumber)) {				
+
+
+
+					/* Display the account owner's name, account number, 
+						and current balance in the text fields */
+					//String displayedName = rowSet.getString("FirstName") + " " + rowSet.getString("LastName");		
+
+
+					/* Returns an array list storing all necessary data to be displayed
+						in either the SearchUpdateAccount, Deposit, or Withdraw window.
+						Not all data are displayed in each window. */
+
+					/* This method could return an object, but that could not store the current row number.
+						We need to return the current row number, so we use an array list to return multiple items. */
+
+					/* The elements to return are: firstName, lastName, gender, date of birth, 
+						marital status, addressLine1, addressLin2, addressLine3, phoneNumber, 
+						accountType, accountBalance, accountNumber, currentRow */
+					accountData.add(rowSet.getString("FirstName"));
+					accountData.add(rowSet.getString("LastName"));
+					accountData.add(rowSet.getString("Gender"));
+					accountData.add(rowSet.getString("DateOfBirth"));
+					accountData.add(rowSet.getString("MaritalStatus"));
+					accountData.add(rowSet.getString("AddressLine1"));
+					accountData.add(rowSet.getString("AddressLine2"));
+					accountData.add(rowSet.getString("AddressLine3"));
+					accountData.add(rowSet.getString("PhoneNumber"));
+					accountData.add(rowSet.getString("AccountType"));
+					accountData.add(rowSet.getString("AccountBalance"));
+					accountData.add(rowSet.getString("AccountNumber"));
+					accountData.add(String.valueOf(i)); // Add the current row number which is necessary for calculations in the classes where this method is called						
+					break; 
+				}		
+			}
+		} // DO NOT USE ROWSET.CLOSE
+		catch(SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		return accountData;
+	}
+
+
+	/**
+	 * Deposit a specific amount of money to a given account. 
+	 * @param rowNumber the row in the database table storing the account to which the amount will be deposited
+	 * @param currentBalance the current balance of the account
+	 * @param amount the amount of money to be deposited
+	 */
+	public void deposit(int rowNumber, double currentBalance, double amount) {
+		try	{
+			// Move to the row where the account was found 
+			rowSet.absolute(rowNumber);			
+
+			// Calculate the new balance and update the rowSet as well as the database
+			rowSet.updateDouble("AccountBalance", currentBalance + amount); 	
+			rowSet.updateRow(); 			
+
+			//rowSet.close();			
+			JOptionPane.showMessageDialog(null, "Cash deposited");	
+		}
+		catch(SQLException e) {			
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		finally {
+			try {
+				rowSet.close();
+			} catch (SQLException e) {
+				logger.log(Level.SEVERE, "Exception ", e);
+			}
+		}	
+	}
+
+	/**
+	 * Withdraw a specific amount of money from a given account. 
+	 * @param rowNumber the row in the database table storing the account from which the amount will be withdrawn
+	 * @param currentBalance the current balance of the account
+	 * @param amount the amount of money to be withdrawn
+	 */
+	public void withdraw(int rowNumber, double currentBalance, double amount) {
+		try	{
+			// Move to the row where the account was found 
+			rowSet.absolute(rowNumber); 		
+
+			// Calculate the new balance and update the rowSet as well as the database
+			rowSet.updateDouble("AccountBalance", currentBalance - amount); 			
+			rowSet.updateRow(); 
+
+			JOptionPane.showMessageDialog(null, "Cash withdrawn");			
+		}
+		catch(SQLException e) {
+			logger.log(Level.SEVERE, "Exception ", e);
+		}
+		finally {
+			try {
+				rowSet.close();
+			} catch (SQLException e) {
+				logger.log(Level.SEVERE, "Exception ", e);
+			}
+
+		}
+	}
+
+	/**
+	 * This method begins the money transfer between two accounts by debiting the transferred amount from the remitter's account.
+	 */
+	public void debitTransferredAmount(double amount, String remitterAccountNumber) {
+		try	{			
+			// The charge of each transaction is £1
+			int incurredCharge = 1;
+
+			/* Store the number of rows in a variable called ID.
+			i.e. move to the last row, check the last customer's ID,
+        	and store it in a variable so we get how many rows there are in the table */ 
+			rowSet.last();
+			int numberOfRows = rowSet.getInt("PersonID");
+
+			// look for the remitter's account number in the database
+			for(int i = 1; i <= numberOfRows; i++)	{
+				rowSet.absolute(i); // move to row i
+
+				/* if the account number in the current row is the same as the remitter's account number
+				(there is no need for an else statement because we previously checked that the account is present in the database) */
+				if(rowSet.getString("AccountNumber").equals(remitterAccountNumber))	{
+					// get the remitter's account balance
+					double remitterAccountBalance = rowSet.getDouble("AccountBalance");
+
+					// debit the transferred amount from the remitter's account balance as well as the £1 incurred charge
+					remitterAccountBalance = remitterAccountBalance - amount - incurredCharge;
+
+					// update the remitter's account balance in the rowSetet and in the database
+					rowSet.updateDouble("AccountBalance", remitterAccountBalance);
+					rowSet.updateRow();
+
+					//rowSet.close();					
+					break; 
+				}
+			}			
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
+		}
+	}
+
+	/**
+	 * This method finishes the money transfer between two accounts by crediting the transferred amount to the payee's account.
+	 */	
+	public void creditTransferredAmount(double amount, String payeeAccountNumber) {
+		try	{							
+			/* Store the number of rows in a variable called ID.
+			i.e. move to the last row, check the last customer's ID,
+			and store it in a variable so we get how many rows there are in the table */ 
+			rowSet.last();
+			int numberOfRows = rowSet.getInt("PersonID");
+
+			// Then look for the payee's account number in the database
+			for(int i = 1; i <= numberOfRows; i++)	{
+				rowSet.absolute(i); // move to row i
+
+				/* if the account number in the current row is the same as the payee's account number
+				(there is no need for an else statement because we previously checked that the account is present in the database) */
+				if(rowSet.getString("AccountNumber").equals(payeeAccountNumber)) {
+					// then get the payee's account balance
+					double payeeAccountBalance = rowSet.getDouble("AccountBalance");
+
+					// credit the transferred amount to their balance
+					payeeAccountBalance = payeeAccountBalance + amount;
+
+					// update the payee's account balance in the rowSetet and in the database
+					rowSet.updateDouble("AccountBalance", payeeAccountBalance);
+					rowSet.updateRow(); 						
+
+					break;
+				}
+			}		
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
+		} finally {
+			try {
+				rowSet.close();
+			} catch (SQLException e) {
+				logger.log(Level.SEVERE, "Exception ", e);
+			}
+		}
+	}
+}
+
+
+
+// RENAME CUSTOMERDB TO BANKACCOUNTDB. SERIOUSLY??

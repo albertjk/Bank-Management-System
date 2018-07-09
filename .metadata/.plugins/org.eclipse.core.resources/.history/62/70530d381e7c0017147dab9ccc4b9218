@@ -1,0 +1,137 @@
+package bank.management.system;
+
+import java.awt.*;
+import javax.swing.*;
+import java.sql.*;
+
+/**
+ * This window displays all the account holders' data in a table. 
+ * The displayed data include their First Name, Last Name, Account Type, Account Number, Account Balance,
+ * Gender, Date Of Birth, Marital Status, Address Lines, and Phone Number.
+ * 
+ * @author Albert Jozsa-Kiraly
+ * @version 24/08/16
+ */
+public class DisplayTable extends JFrame
+{
+	/**
+	 * The column names of the table are held in this array
+	 */
+	private String[] columnNames = {"First Name", "Last Name", "Account Type", 
+							"Account Number", "Account Balance", "Gender",
+							"Date of Birth", "Marital Status", "Address Line 1",
+							"Address Line 2", "AddressLine 3", "Phone Number"};
+	
+	/**
+	 * Size constants of the JTable
+	 */
+	private static final int TABLE_WIDTH = 1300;
+	private static final int TABLE_HEIGHT= 80;
+	
+	private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver";
+	private static final String DB_URL = "jdbc:derby://localhost:1527/CustomerDB";
+	private static final String DB_USERNAME = "albert";
+	private static final String DB_PASSWORD = "123";
+	
+	/**
+	 * The launcher method which configures the frame and displays it
+	 */
+	public static void displayTableWindow()
+	{
+		DisplayTable frame = new DisplayTable();
+		
+		// keep the window of MainInterface.java open after this one is closed
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); 
+		frame.setTitle("Bank Accounts of All Customers");
+		frame.createTable();
+		frame.pack(); // sets preferred size for the frame
+		frame.setLocationRelativeTo(null);	
+		frame.setVisible(true);
+	}
+	
+	/**
+	 * This method connects to the database, gets the data from it, and
+	 * puts them into an object. Then the layout is set and a table is created in which 
+	 * the column names and the data are displayed. Finally, a scroll pane is created
+	 * so the user can scroll through all the records in the table.
+	 */
+	public void createTable()
+	{
+		try
+		{		
+			// First set up a connection to the database
+			Connection myConnection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+			
+			// Create a Statement object
+			Statement myStatement = myConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 
+																 ResultSet.CONCUR_READ_ONLY);
+			
+			/* SQL query to be executed.
+			This is essential to load all rows to the ResultSet prior to working with them */
+			String SQL = "SELECT * FROM ALBERT.BANKACCOUNT";
+			
+			// Execute the SQL query which returns a single ResultSet object
+			ResultSet results = myStatement.executeQuery(SQL);
+			
+			/* Store the number of database rows in a variable called ID.
+			i.e. move to the last row, check the last customer's PersonID,
+			and store it in the variable so we get how many rows there are in the database table */
+			results.last();
+			int ID = results.getInt("PersonID");
+						
+			// This object variable stores the data from all rows
+			Object[][] customerData = new Object[ID+1][12];			
+			
+			results.beforeFirst(); // Jump before the first row so the loop can start with the first row
+			
+			// Loop through all the rows to get the data	
+			for(int i = 1; i <= ID; i++)
+			{
+				results.absolute(i); // move the cursor to the current row
+				
+				System.out.println(i);
+				System.out.println(results.getString("FirstName"));
+                                
+				// Store the customer data in the object variable
+				customerData[i][0] = results.getString("FirstName");
+				customerData[i][1] = results.getString("LastName");
+				customerData[i][2] = results.getString("AccountType");
+				customerData[i][3] = results.getString("AccountNumber");
+				customerData[i][4] = "£" + results.getString("AccountBalance");
+				customerData[i][5] = results.getString("Gender");
+				customerData[i][6] = results.getString("DateOfBirth");
+				customerData[i][7] = results.getString("MaritalStatus");
+				customerData[i][8] = results.getString("AddressLine1");
+				customerData[i][9] = results.getString("AddressLine2");
+				customerData[i][10] = results.getString("AddressLine3");
+				customerData[i][11] = results.getString("PhoneNumber");
+			}	
+			
+			
+			for(int k = 0; k < 24; k++) {
+				for(int m = 0; m < 12; m++) {
+					System.out.println(customerData[k][m]);
+				}
+			}
+			
+			
+			Container window = getContentPane();
+			window.setLayout(new GridLayout(1,0)); // the Grid Layout is suitable for displaying a table
+			
+			// Create table which displays the data
+			JTable table = new JTable(customerData, columnNames);
+			table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
+			table.setFillsViewportHeight(true);
+			
+			// Create a scroll pane so the user can scroll through the records
+			JScrollPane scrollPane = new JScrollPane(table);
+			window.add(scrollPane);		
+			
+			myStatement.close();
+		}
+		catch(SQLException e) // handle exceptions if they occur by displaying the error message
+		{
+			JOptionPane.showMessageDialog(this, e.getMessage());
+		}
+	}
+}

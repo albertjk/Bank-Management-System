@@ -1,0 +1,381 @@
+package bank.management.system;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+/**
+ * This class is part of my Summer 2016 Personal Project. 
+ * It holds the frame that is opened when clicked on the Create New Account 
+ * menu item from the main menu. The data of the new customer can be entered 
+ * and on button click the data is stored in an SQL database 
+ * and the new account is created.
+ * 
+ * @author Albert Jozsa-Kiraly
+ * @version 11/09/16
+ */
+public class CreateAccount extends JFrame implements ActionListener {
+	// I PROBABLY DON'T NEED ALL CONSTANTS! ESPECIALLY NOT THE ONES I ADD A VALUE TO WHEN USING THEM
+
+
+	/**
+	 * The width and the height of the frame
+	 */
+	private static final int FRAME_WIDTH = 491;
+	private static final int FRAME_HEIGHT = 490;
+
+	/**
+	 * These variables are used when positioning JLabels	   
+	 */
+	private static final int JLABEL_X = 20;
+	private static final int SECOND_COLUMN_X = 120;
+
+	/**
+	 * These variables are used when positioning JTextFields, and JRadioButtons
+	 * i.e. where the customer data is being entered
+	 */
+	private static final int FIRST_NAME_LABEL_Y = 50;
+	private static final int LAST_NAME_LABEL_Y = 78;
+	private static final int GENDER_LABEL_Y = 107;
+	private static final int DATE_OF_BIRTH_LABEL_Y = 144;
+	private static final int MARITAL_STATUS_LABEL_Y = 178;
+	private static final int ADDRESS_LABEL_Y = 214;
+	private static final int PHONE_NUMBER_LABEL_Y = 305;
+	private static final int ACCOUNT_TYPE_LABEL_Y = 335;
+	private static final int ALLOCATED_ACCOUNT_NUMBER_LABEL_Y = 365;
+	private static final int TEXT_FIELD_HEIGHT = 21;
+
+	/**
+	 * These variables are used to position the Create Account button	  
+	 */
+	private static final int CREATE_ACCOUNT_BUTTON_X = 178;
+	private static final int CREATE_ACCOUNT_BUTTON_Y = 405;
+
+	/**
+	 * These variables are used to define the size of the Create Account Button	 
+	 */
+	private static final int CREATE_ACCOUNT_BUTTON_WIDTH = 130;
+	private static final int CREATE_ACCOUNT_BUTTON_HEIGHT = 27;
+
+	/**
+	 * This variable is the width of the Allocated Account Number text field
+	 */
+	private static final int ALLOCATED_ACCOUNT_NUMBER_TEXT_FIELD_WIDTH = 61;
+
+
+
+	private static final int DATE_OF_BIRTH_TEXT_FIELD_X = 195;
+	private static final int DATE_OF_BIRTH_TEXT_FIELD_Y = 143;
+
+	BankAccountBean bean = new BankAccountBean();
+	
+	
+
+
+	/**
+	 * The launcher method which configures the frame and makes it visible.
+	 */
+	public static void createAccountWindow() {
+		CreateAccount frame = new CreateAccount();
+
+		// Keep the window of MainInterface.java open after this one is closed
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); 
+
+		frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);			
+		frame.setLocationRelativeTo(null); 
+		frame.setTitle("Create New Account");
+		frame.setResizable(false); 
+		frame.createGUI();
+		frame.setVisible(true);	 
+	}
+
+	/**
+	 * These GUI components are declared as globals, so they can be accessed in multiple methods.
+	 */
+	private JTextField firstNameTextField;
+	private JTextField lastNameTextField;		 
+	private ButtonGroup genderGroup;	
+	private JTextField dateOfBirthTextField;
+	private ButtonGroup maritalStatusGroup;
+	private JTextField addressTextField1;
+	private JTextField addressTextField2;
+	private JTextField addressTextField3;	
+	private JTextField phoneNumberTextField;	
+	private ButtonGroup accountTypeGroup;	
+	private JTextField allocatedAccountNumberTextField;
+	private JButton createAccountButton;
+
+	// Standard window set up
+	private Container window = getContentPane();
+
+	/**
+	 * This method builds the graphical user interface.
+	 * Sets up the labels, text fields, and radio buttons with adjusted sizes and positions.
+	 */
+	private void createGUI() {
+
+		// The window layout is set to null as we will adjust the positions of components
+		window.setLayout(null); 
+
+		// The label in the middle on the top. This is initalized here because we need its size to initialize the text fields.
+		JLabel enterCustomerInformationLabel = new JLabel("Enter Customer Information");
+		enterCustomerInformationLabel.setFont(new Font("Gill Sans MT", Font.BOLD, 18));    	  				
+		enterCustomerInformationLabel.setBounds(120, 11, 
+				enterCustomerInformationLabel.getPreferredSize().width, 
+				enterCustomerInformationLabel.getPreferredSize().height);
+		window.add(enterCustomerInformationLabel);
+
+		// Initialize labels, text fields and radio buttons
+		initializeRemainingLabels();
+		initializeTextFields(enterCustomerInformationLabel.getPreferredSize().width);
+		initializeRadioButtons();		
+
+		// As this is the only button in the window, we initialize it here
+		createAccountButton = new JButton("Create Account");
+		createAccountButton.addActionListener(this);
+		createAccountButton.setBounds(CREATE_ACCOUNT_BUTTON_X, CREATE_ACCOUNT_BUTTON_Y, 
+				CREATE_ACCOUNT_BUTTON_WIDTH, CREATE_ACCOUNT_BUTTON_HEIGHT);
+		window.add(createAccountButton);		
+	}
+
+	/**
+	 * This method initializes all except the top label and adds them to the window.
+	 */
+	public void initializeRemainingLabels() {
+		JLabel firstNameLabel = new JLabel("First Name:");
+		firstNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		firstNameLabel.setBounds(JLABEL_X, FIRST_NAME_LABEL_Y, 
+				firstNameLabel.getPreferredSize().width, firstNameLabel.getPreferredSize().height);
+		window.add(firstNameLabel);
+
+		JLabel lastNameLabel = new JLabel("Last Name:");
+		lastNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lastNameLabel.setBounds(JLABEL_X, LAST_NAME_LABEL_Y, 
+				lastNameLabel.getPreferredSize().width, lastNameLabel.getPreferredSize().height);
+		window.add(lastNameLabel);			
+
+		JLabel genderLabel = new JLabel("Gender:");
+		genderLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		genderLabel.setBounds(JLABEL_X, GENDER_LABEL_Y, genderLabel.getPreferredSize().width, 
+				genderLabel.getPreferredSize().height);
+		window.add(genderLabel);
+
+		JLabel dateOfBirthLabel = new JLabel("Date of Birth: dd/mm/yyyy");
+		dateOfBirthLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		dateOfBirthLabel.setBounds(JLABEL_X, DATE_OF_BIRTH_LABEL_Y, 
+				dateOfBirthLabel.getPreferredSize().width, dateOfBirthLabel.getPreferredSize().height);
+		window.add(dateOfBirthLabel);
+
+		JLabel maritalStatusLabel = new JLabel("Marital Status:");
+		maritalStatusLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		maritalStatusLabel.setBounds(JLABEL_X, MARITAL_STATUS_LABEL_Y, 
+				maritalStatusLabel.getPreferredSize().width, maritalStatusLabel.getPreferredSize().height);
+		window.add(maritalStatusLabel);
+
+		JLabel addressLabel = new JLabel("Address:");
+		addressLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		addressLabel.setBounds(JLABEL_X, ADDRESS_LABEL_Y, addressLabel.getPreferredSize().width, 
+				addressLabel.getPreferredSize().height);
+		window.add(addressLabel);
+
+		JLabel phoneNumberLabel = new JLabel("Phone Number:");
+		phoneNumberLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		phoneNumberLabel.setBounds(JLABEL_X, PHONE_NUMBER_LABEL_Y, 
+				phoneNumberLabel.getPreferredSize().width, phoneNumberLabel.getPreferredSize().height);
+		window.add(phoneNumberLabel);
+
+		JLabel accountTypeLabel = new JLabel("Account Type:");
+		accountTypeLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		accountTypeLabel.setBounds(JLABEL_X, ACCOUNT_TYPE_LABEL_Y, 
+				accountTypeLabel.getPreferredSize().width, accountTypeLabel.getPreferredSize().height);
+		window.add(accountTypeLabel);
+
+		JLabel allocatedAccountNumberLabel = new JLabel("Allocated Account Number:");
+		allocatedAccountNumberLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		allocatedAccountNumberLabel.setBounds(JLABEL_X, ALLOCATED_ACCOUNT_NUMBER_LABEL_Y, 
+				allocatedAccountNumberLabel.getPreferredSize().width, 
+				allocatedAccountNumberLabel.getPreferredSize().height);
+		window.add(allocatedAccountNumberLabel);	
+	}	
+
+	/**
+	 * This method initializes all text fields and adds them to the window.
+	 * @param fieldWidth the width of the text fields
+	 */
+	public void initializeTextFields(int fieldWidth) {
+		firstNameTextField = new JTextField(23);
+		firstNameTextField.setBounds(SECOND_COLUMN_X, FIRST_NAME_LABEL_Y - 2, 
+				fieldWidth, TEXT_FIELD_HEIGHT);
+		window.add(firstNameTextField);
+
+		lastNameTextField = new JTextField(23);
+		lastNameTextField.setBounds(SECOND_COLUMN_X, LAST_NAME_LABEL_Y - 2,
+				fieldWidth, TEXT_FIELD_HEIGHT);
+		window.add(lastNameTextField);
+
+		dateOfBirthTextField = new JTextField(10);
+		dateOfBirthTextField.setBounds(DATE_OF_BIRTH_TEXT_FIELD_X, DATE_OF_BIRTH_TEXT_FIELD_Y, 
+				dateOfBirthTextField.getPreferredSize().width, dateOfBirthTextField.getPreferredSize().height);
+		window.add(dateOfBirthTextField);
+
+		addressTextField1 = new JTextField(23);
+		addressTextField1.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y - 1, 
+				fieldWidth, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField1);
+
+		addressTextField2 = new JTextField(23);
+		addressTextField2.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 27, 
+				fieldWidth, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField2);
+
+		addressTextField3 = new JTextField(23);
+		addressTextField3.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 57, 
+				fieldWidth, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField3);
+
+		phoneNumberTextField = new JTextField(19);
+		phoneNumberTextField.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 90, 
+				fieldWidth - 40, TEXT_FIELD_HEIGHT);
+		window.add(phoneNumberTextField);
+
+		bean.doConnect();
+		allocatedAccountNumberTextField = new JTextField(bean.generateRandomAccountNumber());
+		allocatedAccountNumberTextField.setEditable(false);
+		allocatedAccountNumberTextField.setBounds(SECOND_COLUMN_X + 80,
+				CREATE_ACCOUNT_BUTTON_Y - 40, ALLOCATED_ACCOUNT_NUMBER_TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(allocatedAccountNumberTextField);
+	}
+
+	/**
+	 * This method initializes all radio buttons and adds them to the window.
+	 */
+	public void initializeRadioButtons() {
+		JRadioButton maleRadioButton = new JRadioButton("Male");
+		maleRadioButton.setActionCommand("Male");		
+		maleRadioButton.setBounds(SECOND_COLUMN_X, GENDER_LABEL_Y - 2, 
+				maleRadioButton.getPreferredSize().width, maleRadioButton.getPreferredSize().height);
+		window.add(maleRadioButton);
+
+		JRadioButton femaleRadioButton = new JRadioButton("Female");
+		femaleRadioButton.setActionCommand("Female");
+		femaleRadioButton.setBounds(SECOND_COLUMN_X + 60, GENDER_LABEL_Y - 2, 
+				femaleRadioButton.getPreferredSize().width, femaleRadioButton.getPreferredSize().height);
+		window.add(femaleRadioButton);
+
+		// Group the radio buttons related to Gender
+		genderGroup = new ButtonGroup();
+		genderGroup.add(maleRadioButton);
+		genderGroup.add(femaleRadioButton);
+
+		JRadioButton singleRadioButton = new JRadioButton("Single");
+		singleRadioButton.setActionCommand("Single");
+		singleRadioButton.setBounds(SECOND_COLUMN_X, MARITAL_STATUS_LABEL_Y - 3,
+				singleRadioButton.getPreferredSize().width, singleRadioButton.getPreferredSize().height);
+		window.add(singleRadioButton);
+
+		JRadioButton marriedRadioButton = new JRadioButton("Married");
+		marriedRadioButton.setActionCommand("Married");
+		marriedRadioButton.setBounds(SECOND_COLUMN_X + 60, MARITAL_STATUS_LABEL_Y - 3,
+				marriedRadioButton.getPreferredSize().width, marriedRadioButton.getPreferredSize().height);
+		window.add(marriedRadioButton);
+
+		JRadioButton divorcedRadioButton = new JRadioButton("Divorced");
+		divorcedRadioButton.setActionCommand("Divorced");
+		divorcedRadioButton.setBounds(SECOND_COLUMN_X + 129, MARITAL_STATUS_LABEL_Y - 3,
+				divorcedRadioButton.getPreferredSize().width, divorcedRadioButton.getPreferredSize().height);
+		window.add(divorcedRadioButton);
+
+		JRadioButton widowedRadioButton = new JRadioButton("Widowed");
+		widowedRadioButton.setActionCommand("Widowed");
+		widowedRadioButton.setBounds(SECOND_COLUMN_X + 205, MARITAL_STATUS_LABEL_Y - 3,
+				widowedRadioButton.getPreferredSize().width, widowedRadioButton.getPreferredSize().height);
+		window.add(widowedRadioButton);
+
+		// Group the radio buttons related to Marital Status
+		maritalStatusGroup = new ButtonGroup();
+		maritalStatusGroup.add(singleRadioButton);
+		maritalStatusGroup.add(marriedRadioButton);
+		maritalStatusGroup.add(divorcedRadioButton);
+		maritalStatusGroup.add(widowedRadioButton);
+
+		JRadioButton platinumRadioButton = new JRadioButton("Platinum");
+		platinumRadioButton.setActionCommand("Platinum");
+		platinumRadioButton.setBounds(SECOND_COLUMN_X, ACCOUNT_TYPE_LABEL_Y - 3, 
+				platinumRadioButton.getPreferredSize().width, platinumRadioButton.getPreferredSize().height);
+		window.add(platinumRadioButton);
+
+		JRadioButton classicRadioButton = new JRadioButton("Classic");
+		classicRadioButton.setActionCommand("Classic");
+		classicRadioButton.setBounds(SECOND_COLUMN_X + 74, ACCOUNT_TYPE_LABEL_Y - 3, 
+				classicRadioButton.getPreferredSize().width, classicRadioButton.getPreferredSize().height);
+		window.add(classicRadioButton);
+
+		JRadioButton savingsRadioButton = new JRadioButton("Savings");
+		savingsRadioButton.setActionCommand("Savings");
+		savingsRadioButton.setBounds(SECOND_COLUMN_X + 140, ACCOUNT_TYPE_LABEL_Y - 3, 
+				savingsRadioButton.getPreferredSize().width, savingsRadioButton.getPreferredSize().height);
+		window.add(savingsRadioButton);
+
+		JRadioButton studentRadioButton = new JRadioButton("Student");
+		studentRadioButton.setActionCommand("Student");
+		studentRadioButton.setBounds(SECOND_COLUMN_X + 207, ACCOUNT_TYPE_LABEL_Y - 3, 
+				studentRadioButton.getPreferredSize().width, studentRadioButton.getPreferredSize().height);
+		window.add(studentRadioButton);	
+
+		// Group the radio buttons related to Age Group
+		accountTypeGroup = new ButtonGroup();
+		accountTypeGroup.add(platinumRadioButton);
+		accountTypeGroup.add(classicRadioButton);
+		accountTypeGroup.add(savingsRadioButton);
+		accountTypeGroup.add(studentRadioButton);
+	}
+
+	/**
+	 * This method handles the action on click to the Create Account button.
+	 */	
+	public void actionPerformed(ActionEvent event) {
+		
+		
+		bean.doConnect();
+		bean.generateRandomAccountNumber();
+
+		/* If the Create Account button is clicked, and all data are correctly entered/selected, 
+		create the account and add it to the database. A new account has zero balance. */
+		if(event.getSource() == createAccountButton) {
+			
+			if(!firstNameTextField.getText().trim().isEmpty() && !lastNameTextField.getText().trim().isEmpty()
+					&& genderGroup.getSelection() != null && !dateOfBirthTextField.getText().trim().isEmpty() 
+					&& maritalStatusGroup.getSelection()!= null && !addressTextField1.getText().trim().isEmpty()  
+					&& !addressTextField2.getText().trim().isEmpty() && !addressTextField3.getText().trim().isEmpty() 
+					&& !phoneNumberTextField.getText().trim().isEmpty() && accountTypeGroup.getSelection()!= null) {	
+				
+				BankAccount account = new BankAccount(firstNameTextField.getText(), lastNameTextField.getText(),
+						genderGroup.getSelection().getActionCommand(), dateOfBirthTextField.getText(), 
+						maritalStatusGroup.getSelection().getActionCommand(),addressTextField1.getText(), 
+						addressTextField2.getText(), addressTextField3.getText(), phoneNumberTextField.getText(), 
+						accountTypeGroup.getSelection().getActionCommand(), 0, allocatedAccountNumberTextField.getText());					
+				bean.createAccount(account);
+
+				JOptionPane.showMessageDialog(null, "Account created");
+
+				// Clear everything and generate a new account number, so another account can be created if wanted to
+				firstNameTextField.setText("");
+				lastNameTextField.setText("");
+				genderGroup.clearSelection();
+				dateOfBirthTextField.setText("");
+				maritalStatusGroup.clearSelection();
+				addressTextField1.setText("");
+				addressTextField2.setText("");
+				addressTextField3.setText("");
+				phoneNumberTextField.setText("");
+				accountTypeGroup.clearSelection();
+				allocatedAccountNumberTextField.setText(bean.generateRandomAccountNumber());
+			}
+			/* If, on button click, there was an error in the input or some data were missing or 
+        	neither radio buttons were selected in each group, tell the user */
+			else {
+				JOptionPane.showMessageDialog(null, "Please enter all the data correctly");
+			}
+		}
+	}
+}

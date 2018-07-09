@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="Extract/Load file format wizard page">
+		<item value="Comma" key="Column delimiter"/>
+		<item value="&quot;" key="String delimiter"/>
+		<item value="C:\Users\Albert JK\Desktop\data.data" key="File path"/>
+		<item value="true" key="Replace data"/>
+	</section>
+</section>

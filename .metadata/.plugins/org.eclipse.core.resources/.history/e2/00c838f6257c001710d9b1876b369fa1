@@ -1,0 +1,611 @@
+package bank.management.system;
+
+import java.awt.*;
+import java.awt.event.*;
+
+
+import javax.swing.*;
+import java.util.ArrayList;
+
+/**
+ * The user can search a customer by their account number 
+ * and if found in the database they can delete the account or 
+ * update the customer data.
+ * 
+ * @author Albert Jozsa-Kiraly
+ * @version 05/09/16
+ */
+public class SearchUpdateAccount extends JFrame implements ActionListener {
+	/**
+	 * The width and the height of the window
+	 */
+	private static final int FRAME_WIDTH = 470;
+	private static final int FRAME_HEIGHT = 530;
+
+	/**
+	 * These variables are used when positioning labels, text fields, 
+	 * radio buttons, and buttons.
+	 * Some variables store the width and height of text fields.
+	 */
+	private static final int SEARCH_LABEL_X = 75;
+	private static final int SEARCH_LABEL_Y = 8;
+	private static final int SEARCH_TEXT_FIELD_X = 201;
+	private static final int SEARCH_TEXT_FIELD_Y = 40;
+	private static final int UPDATE_CUSTOMER_DATA_LABEL_X = 135;
+	private static final int UPDATE_CUSTOMER_DATA_LABEL_Y = 100;
+	private static final int START_AGAIN_BUTTON_X = 283;
+	private static final int SEARCH_BUTTON_X = 160;
+	private static final int SEARCH_BUTTON_Y = 70;	
+	private static final int DELETE_BUTTON_X = 58;
+	private static final int DELETE_BUTTON_Y = 37;
+	private static final int JLABEL_X = 20;
+	private static final int SECOND_COLUMN_X = 120;
+	private static final int FIRST_NAME_LABEL_Y = 135;
+	private static final int LAST_NAME_LABEL_Y = 163;
+	private static final int GENDER_LABEL_Y = 192;
+	private static final int DATE_OF_BIRTH_LABEL_Y = 229;
+	private static final int DATE_OF_BIRTH_TEXT_FIELD_X = 195;
+	private static final int DATE_OF_BIRTH_TEXT_FIELD_Y = 228;
+	private static final int MARITAL_STATUS_LABEL_Y = 263;
+	private static final int ADDRESS_LABEL_Y = 299;
+	private static final int PHONE_NUMBER_LABEL_Y = 390;
+	private static final int ACCOUNT_TYPE_LABEL_Y = 420;
+	private static final int TEXT_FIELD_WIDTH = 220;
+	private static final int TEXT_FIELD_HEIGHT = 21;
+	private static final int UPDATE_ACCOUNT_BUTTON_X = 166;
+	private static final int UPDATE_ACCOUNT_BUTTON_Y = 450;
+	private static final int ACCOUNT_NUMBER_TEXT_FIELD_WIDTH = 61;
+
+	
+
+	/**
+	 * The launcher method which configures the frame and makes it visible.
+	 */
+	public static void searchAndUpdateAccountWindow() {
+		SearchUpdateAccount frame = new SearchUpdateAccount();
+
+		// Keep the window of MainInterface.java open after this one is closed
+		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); 
+
+		frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+		frame.setLocationRelativeTo(null); 	
+		frame.setTitle("Search and Update Account");
+		frame.setResizable(false); 
+		frame.createGUI();
+		frame.setVisible(true);	 
+	}
+
+	/**
+	 * These GUI components are declared as globals, so they can be accessed in multiple methods.
+	 */
+	private JTextField searchTextField;
+	private JButton startAgainButton;
+	private JButton searchButton;  
+	private JButton deleteButton;    
+	private JTextField firstNameTextField;
+	private JTextField lastNameTextField;    
+	private JRadioButton maleRadioButton;
+	private JRadioButton femaleRadioButton;
+	private ButtonGroup genderGroup;   
+	private JTextField dateOfBirthTextField;    
+	private JRadioButton singleRadioButton;
+	private JRadioButton marriedRadioButton;
+	private JRadioButton divorcedRadioButton;
+	private JRadioButton widowedRadioButton;
+	private ButtonGroup maritalStatusGroup;   
+	private JTextField addressTextField1;
+	private JTextField addressTextField2;
+	private JTextField addressTextField3;    
+	private JTextField phoneNumberTextField;     
+	private ButtonGroup accountTypeGroup;
+	private JRadioButton platinumRadioButton;
+	private JRadioButton classicRadioButton; 
+	private JRadioButton savingsRadioButton;
+	private JRadioButton studentRadioButton;      
+	private JButton updateAccountButton;
+
+	// Standard window set up
+	private Container window = getContentPane();
+
+	/**
+	 * This method builds the graphical user interface.
+	 * Sets up the labels, text fields, and radio buttons with adjusted sizes and positions.	 *
+	 * Text fields, and radio buttons are not enabled/not editable 
+	 * by default before the customer is found.
+	 */
+	private void createGUI() {
+
+		// The window layout is set to null as we will adjust the positions of components
+		window.setLayout(null);     	
+
+		// Initialize labels, text fields and radio buttons
+		initializeLabels();
+		initializeTextFields();
+		initializeRadioButtons();		
+
+		// Initialize all buttons
+		startAgainButton = new JButton("Clear all and start again");
+		startAgainButton.setBounds(START_AGAIN_BUTTON_X, DELETE_BUTTON_Y, startAgainButton.getPreferredSize().width, 
+				startAgainButton.getPreferredSize().height);
+		startAgainButton.addActionListener(this);
+		startAgainButton.setEnabled(false);
+		window.add(startAgainButton);
+
+		searchButton = new JButton("Search in database");
+		searchButton.setBounds(SEARCH_BUTTON_X, SEARCH_BUTTON_Y, searchButton.getPreferredSize().width, 
+				searchButton.getPreferredSize().height);
+		searchButton.addActionListener(this);
+		window.add(searchButton);
+
+		deleteButton = new JButton("Delete account");    	
+		deleteButton.setBounds(DELETE_BUTTON_X, DELETE_BUTTON_Y, deleteButton.getPreferredSize().width, 
+				deleteButton.getPreferredSize().height);
+		deleteButton.addActionListener(this);   	
+		deleteButton.setEnabled(false);
+		window.add(deleteButton);	
+
+		updateAccountButton = new JButton("Update Account");
+		updateAccountButton.setEnabled(false); 
+		updateAccountButton.addActionListener(this);
+		updateAccountButton.setBounds(UPDATE_ACCOUNT_BUTTON_X, UPDATE_ACCOUNT_BUTTON_Y, 
+				updateAccountButton.getPreferredSize().width, updateAccountButton.getPreferredSize().height);
+		window.add(updateAccountButton);
+	}
+
+	/**
+	 * This method initializes all labels and adds them to the window.
+	 */
+	public void initializeLabels() {
+		JLabel searchCustomerAccountLabel = new JLabel("Search customer by account number");
+		searchCustomerAccountLabel.setFont(new Font("Gill Sans MT", Font.BOLD, 18));
+		searchCustomerAccountLabel.setBounds(SEARCH_LABEL_X, SEARCH_LABEL_Y, 
+				searchCustomerAccountLabel.getPreferredSize().width, searchCustomerAccountLabel.getPreferredSize().height);
+		window.add(searchCustomerAccountLabel);	
+
+		JLabel updateCustomerDataLabel = new JLabel("Update customer data");
+		updateCustomerDataLabel.setFont(new Font("Gill Sans MT", Font.BOLD, 18));
+		updateCustomerDataLabel.setBounds(UPDATE_CUSTOMER_DATA_LABEL_X, UPDATE_CUSTOMER_DATA_LABEL_Y, 
+				updateCustomerDataLabel.getPreferredSize().width, updateCustomerDataLabel.getPreferredSize().height);
+		window.add(updateCustomerDataLabel);
+
+		JLabel firstNameLabel = new JLabel("First Name:");
+		firstNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		firstNameLabel.setBounds(JLABEL_X, FIRST_NAME_LABEL_Y, firstNameLabel.getPreferredSize().width, 
+				firstNameLabel.getPreferredSize().height);
+		window.add(firstNameLabel);
+
+		JLabel lastNameLabel = new JLabel("Last Name:");
+		lastNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lastNameLabel.setBounds(JLABEL_X, LAST_NAME_LABEL_Y, lastNameLabel.getPreferredSize().width, 
+				lastNameLabel.getPreferredSize().height);
+		window.add(lastNameLabel);
+
+		JLabel genderLabel = new JLabel("Gender:");
+		genderLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		genderLabel.setBounds(JLABEL_X, GENDER_LABEL_Y, genderLabel.getPreferredSize().width, 
+				genderLabel.getPreferredSize().height);
+		window.add(genderLabel);
+
+		JLabel dateOfBirthLabel = new JLabel("Date of Birth: dd/mm/yyyy");
+		dateOfBirthLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		dateOfBirthLabel.setBounds(JLABEL_X, DATE_OF_BIRTH_LABEL_Y, dateOfBirthLabel.getPreferredSize().width, 
+				dateOfBirthLabel.getPreferredSize().height);
+		window.add(dateOfBirthLabel);
+
+		JLabel maritalStatusLabel = new JLabel("Marital Status:");
+		maritalStatusLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		maritalStatusLabel.setBounds(JLABEL_X, MARITAL_STATUS_LABEL_Y, maritalStatusLabel.getPreferredSize().width, 
+				maritalStatusLabel.getPreferredSize().height);
+		window.add(maritalStatusLabel);
+
+		JLabel addressLabel = new JLabel("Address:");
+		addressLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		addressLabel.setBounds(JLABEL_X, ADDRESS_LABEL_Y, addressLabel.getPreferredSize().width, 
+				addressLabel.getPreferredSize().height);
+		window.add(addressLabel);
+
+		JLabel phoneNumberLabel = new JLabel("Phone Number:");
+		phoneNumberLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		phoneNumberLabel.setBounds(JLABEL_X, PHONE_NUMBER_LABEL_Y, phoneNumberLabel.getPreferredSize().width, 
+				phoneNumberLabel.getPreferredSize().height);
+		window.add(phoneNumberLabel);
+
+		JLabel accountTypeLabel = new JLabel("Account Type:");
+		accountTypeLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		accountTypeLabel.setBounds(JLABEL_X, ACCOUNT_TYPE_LABEL_Y, accountTypeLabel.getPreferredSize().width, 
+				accountTypeLabel.getPreferredSize().height);
+		window.add(accountTypeLabel);
+	}
+
+	/**
+	 * This method initializes all text fields and adds them to the window.
+	 */
+	public void initializeTextFields() {
+
+		searchTextField = new JTextField("");
+		searchTextField.setBounds(SEARCH_TEXT_FIELD_X, SEARCH_TEXT_FIELD_Y, ACCOUNT_NUMBER_TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(searchTextField);
+
+		firstNameTextField = new JTextField(23);
+		firstNameTextField.setEditable(false);     	
+		firstNameTextField.setBounds(SECOND_COLUMN_X, FIRST_NAME_LABEL_Y - 2, 
+				TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(firstNameTextField);
+
+		lastNameTextField = new JTextField(23);
+		lastNameTextField.setEditable(false); 
+		lastNameTextField.setBounds(SECOND_COLUMN_X, LAST_NAME_LABEL_Y - 2,
+				TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(lastNameTextField);
+
+		dateOfBirthTextField = new JTextField(10);
+		dateOfBirthTextField.setEditable(false); 
+		dateOfBirthTextField.setBounds(DATE_OF_BIRTH_TEXT_FIELD_X, DATE_OF_BIRTH_TEXT_FIELD_Y, 
+				dateOfBirthTextField.getPreferredSize().width, dateOfBirthTextField.getPreferredSize().height);
+		window.add(dateOfBirthTextField);			
+
+		addressTextField1 = new JTextField(23);
+		addressTextField1.setEditable(false); 
+		addressTextField1.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y - 1, 
+				TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField1);
+
+		addressTextField2 = new JTextField(23);
+		addressTextField2.setEditable(false); 
+		addressTextField2.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 27, 
+				TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField2);
+
+		addressTextField3 = new JTextField(23);
+		addressTextField3.setEditable(false); 
+		addressTextField3.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 57, 
+				TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+		window.add(addressTextField3);		
+
+		phoneNumberTextField = new JTextField(19);
+		phoneNumberTextField.setEditable(false); 
+		phoneNumberTextField.setBounds(SECOND_COLUMN_X, ADDRESS_LABEL_Y + 90, 
+				TEXT_FIELD_WIDTH - 40, TEXT_FIELD_HEIGHT);
+		window.add(phoneNumberTextField);
+	}
+
+	/**
+	 * This method initializes all radio buttons and adds them to the window.
+	 */
+	public void initializeRadioButtons() {
+
+		maleRadioButton = new JRadioButton("Male");
+		maleRadioButton.setActionCommand("Male");	
+		maleRadioButton.setEnabled(false);
+		maleRadioButton.setBounds(SECOND_COLUMN_X, GENDER_LABEL_Y - 2, maleRadioButton.getPreferredSize().width,
+				maleRadioButton.getPreferredSize().height);
+		window.add(maleRadioButton);
+
+		femaleRadioButton = new JRadioButton("Female");
+		femaleRadioButton.setActionCommand("Female");
+		femaleRadioButton.setEnabled(false);
+		femaleRadioButton.setBounds(SECOND_COLUMN_X + 60, GENDER_LABEL_Y - 2, femaleRadioButton.getPreferredSize().width,
+				femaleRadioButton.getPreferredSize().height);
+		window.add(femaleRadioButton);
+
+		// Group the radio buttons related to Gender
+		genderGroup = new ButtonGroup();
+		genderGroup.add(maleRadioButton);
+		genderGroup.add(femaleRadioButton);
+
+		singleRadioButton = new JRadioButton("Single");
+		singleRadioButton.setActionCommand("Single");
+		singleRadioButton.setEnabled(false); 
+		singleRadioButton.setBounds(SECOND_COLUMN_X, MARITAL_STATUS_LABEL_Y - 3,
+				singleRadioButton.getPreferredSize().width, singleRadioButton.getPreferredSize().height);
+		window.add(singleRadioButton);
+
+		marriedRadioButton = new JRadioButton("Married");
+		marriedRadioButton.setActionCommand("Married");
+		marriedRadioButton.setEnabled(false);
+		marriedRadioButton.setBounds(SECOND_COLUMN_X + 60, MARITAL_STATUS_LABEL_Y - 3,
+				marriedRadioButton.getPreferredSize().width, marriedRadioButton.getPreferredSize().height);
+		window.add(marriedRadioButton);
+
+		divorcedRadioButton = new JRadioButton("Divorced");
+		divorcedRadioButton.setActionCommand("Divorced");
+		divorcedRadioButton.setEnabled(false); 
+		divorcedRadioButton.setBounds(SECOND_COLUMN_X + 129, MARITAL_STATUS_LABEL_Y - 3,
+				divorcedRadioButton.getPreferredSize().width, divorcedRadioButton.getPreferredSize().height);
+		window.add(divorcedRadioButton);
+
+		widowedRadioButton = new JRadioButton("Widowed");
+		widowedRadioButton.setActionCommand("Widowed");
+		widowedRadioButton.setEnabled(false); 
+		widowedRadioButton.setBounds(SECOND_COLUMN_X + 205, MARITAL_STATUS_LABEL_Y - 3,
+				widowedRadioButton.getPreferredSize().width, widowedRadioButton.getPreferredSize().height);
+		window.add(widowedRadioButton);
+
+		// Group the radio buttons related to Marital Status
+		maritalStatusGroup = new ButtonGroup();		
+		maritalStatusGroup.add(singleRadioButton);
+		maritalStatusGroup.add(marriedRadioButton);
+		maritalStatusGroup.add(divorcedRadioButton);
+		maritalStatusGroup.add(widowedRadioButton);
+
+		platinumRadioButton = new JRadioButton("Platinum");
+		platinumRadioButton.setActionCommand("Platinum");
+		platinumRadioButton.setBounds(SECOND_COLUMN_X, ACCOUNT_TYPE_LABEL_Y - 3, 
+				platinumRadioButton.getPreferredSize().width, platinumRadioButton.getPreferredSize().height);
+		window.add(platinumRadioButton);
+
+		classicRadioButton = new JRadioButton("Classic");
+		classicRadioButton.setActionCommand("Classic");
+		classicRadioButton.setBounds(SECOND_COLUMN_X + 60, ACCOUNT_TYPE_LABEL_Y - 3, 
+				classicRadioButton.getPreferredSize().width, classicRadioButton.getPreferredSize().height);
+		window.add(classicRadioButton);
+
+		savingsRadioButton = new JRadioButton("Savings");
+		savingsRadioButton.setActionCommand("Savings");
+		savingsRadioButton.setBounds(SECOND_COLUMN_X + 136, ACCOUNT_TYPE_LABEL_Y - 3, 
+				savingsRadioButton.getPreferredSize().width, savingsRadioButton.getPreferredSize().height);
+		window.add(savingsRadioButton);
+
+		studentRadioButton = new JRadioButton("Student");
+		studentRadioButton.setActionCommand("Student");
+		studentRadioButton.setBounds(SECOND_COLUMN_X + 200, ACCOUNT_TYPE_LABEL_Y - 3, 
+				studentRadioButton.getPreferredSize().width, studentRadioButton.getPreferredSize().height);
+		window.add(studentRadioButton);		
+
+		// Group the radio buttons related to Age Group
+		accountTypeGroup = new ButtonGroup();
+		accountTypeGroup.add(platinumRadioButton);
+		accountTypeGroup.add(classicRadioButton);
+		accountTypeGroup.add(savingsRadioButton);
+		accountTypeGroup.add(studentRadioButton);
+	}
+
+	private int currentRow; // Holds the current row number
+
+	/* Store the account number of the found account. This will not store the value 
+	of the search text field, because the user could have modified it since the search was made */
+	private String accountNum = null;
+
+	/* This will store the balance of the found account. Only needed for the object creation 
+	in actionPerformed. The balance will not be updated. */
+	private double balance = 0; 	
+
+
+
+
+
+	/**
+	 * Action handler method for button clicks.
+	 */	
+	public void actionPerformed(ActionEvent event) {	
+		
+		BankAccountBean bean = new BankAccountBean();
+		bean.doConnect();
+
+		// If the search button is clicked...
+		if(event.getSource() == searchButton) {
+			// and the entered account number is of correct length...
+			if(searchTextField.getText().trim().length() == 8) {
+				// then search the customer in the database
+
+				ArrayList<String> accountData = bean.searchAccount(searchTextField.getText());
+
+				// If the returned array list has elements, the account was found
+				if(!accountData.isEmpty()) {
+					JOptionPane.showMessageDialog(null, "Account found");					
+
+					/* Display all data about the customer in the text fields and radio buttons,
+    				and set them enabled/editable so their values can be changed.
+    				Enable the delete and start again buttons. */
+					displayFoundData(accountData);
+				}
+				// On the other hand, if the array list has no elements, the account was not found
+				else {
+					JOptionPane.showMessageDialog(null, "There is no such account in the database");
+					searchTextField.setText("");
+					searchTextField.requestFocus(); // Allow the user to start searching again
+				}					
+			}
+			// Otherwise, warn the user
+			else {
+				JOptionPane.showMessageDialog(null, "Please enter a valid account number");
+			}   		
+		}  
+		// If the delete button is clicked, show a dialog asking the user if they really want to delete the account
+		else if(event.getSource() == deleteButton) {			
+			
+			// Store the result of the dialog
+			int dialogResult = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this account?", "Warning", JOptionPane.YES_NO_OPTION);
+
+			// If the answer is yes, then make the deletion
+			if(dialogResult == JOptionPane.YES_OPTION) { 
+				
+				// COULD PASS AN OBJECT TO THE METHOD AS A PARAMETER, BUT THEN I WOULD HAVE TO EXTRACT OBJECT ATTRIBUTES IN THE BEAN CLASS.
+//				BankAccount account = new BankAccount(firstNameTextField.getText().trim(), lastNameTextField.getText().trim(), 
+//						genderGroup.getSelection().getActionCommand(), dateOfBirthTextField.getText().trim(), maritalStatusGroup.getSelection().getActionCommand(), 
+//						addressTextField1.getText().trim(), addressTextField2.getText().trim(),	addressTextField2.getText().trim(),
+//						phoneNumberTextField.getText().trim(), accountTypeGroup.getSelection().getActionCommand(), balance, accountNum);
+				
+				bean.deleteAccount(currentRow);				
+				clearAll(); // Clear everything in the window, so a new customer account can be searched
+				JOptionPane.showMessageDialog(null, "Account deleted");
+			}    		
+		}
+		/* If the Start Again button is clicked then clear all text fields, and radio buttons, 
+    	and make it possible for the user to begin entering a new account number to search */
+		else if(event.getSource() == startAgainButton) {
+			clearAll();
+		}
+		// If the Update Account button is clicked...	
+		else if(event.getSource() == updateAccountButton)
+		{
+			// and all the data are correctly entered/selected, show a dialog warning the user about the update of the account
+			if(!firstNameTextField.getText().trim().isEmpty() && !lastNameTextField.getText().trim().isEmpty() 
+					&& genderGroup.getSelection() != null && !dateOfBirthTextField.getText().trim().isEmpty()
+					&& maritalStatusGroup.getSelection() != null && !addressTextField1.getText().trim().isEmpty() 
+					&& !addressTextField2.getText().trim().isEmpty()  && !addressTextField3.getText().trim().isEmpty()
+					&& !phoneNumberTextField.getText().trim().isEmpty() && accountTypeGroup.getSelection() != null) {	
+
+				// Store the result of the dialog
+				int dialogResult = JOptionPane.showConfirmDialog(null, 
+						"You are about to make changes to an existing account's data. Click OK if you want to make these changes or click Cancel to not make these changes", 
+						"Warning", JOptionPane.OK_CANCEL_OPTION);
+
+				// If the answer is OK, the customer data is updated in the table
+				if(dialogResult == JOptionPane.OK_OPTION) {  
+
+					BankAccount account = new BankAccount(firstNameTextField.getText().trim(), lastNameTextField.getText().trim(), 
+							genderGroup.getSelection().getActionCommand(), dateOfBirthTextField.getText().trim(), maritalStatusGroup.getSelection().getActionCommand(), 
+							addressTextField1.getText().trim(), addressTextField2.getText().trim(),	addressTextField2.getText().trim(),
+							phoneNumberTextField.getText().trim(), accountTypeGroup.getSelection().getActionCommand(), balance, accountNum);					
+					bean.updateAccount(account, currentRow);
+
+					clearAll(); // Clear everything in the window, so a new customer account can be searched
+					JOptionPane.showMessageDialog(null, "Customer account data updated");
+				}
+			}
+			/* If there is an error in the input or some data are missing or 
+        	neither RadioButtons are selected in each group, then warn the user */
+			else {    			
+				JOptionPane.showMessageDialog(null, "Please enter all the data correctly");
+			}  
+		} 
+	}  
+
+	// Array list index constants. Makes the code easier to read.
+	public static final int FIRST_NAME_INDEX = 0;
+	public static final int LAST_NAME_INDEX = 1;
+	public static final int GENDER_INDEX = 2;
+	public static final int DATE_OF_BIRTH_INDEX = 3;
+	public static final int MARITAL_STATUS_INDEX = 4;
+	public static final int ADDRESS_LINE1_INDEX = 5;
+	public static final int ADDRESS_LINE2_INDEX = 6;
+	public static final int ADDRESS_LINE3_INDEX  = 7;
+	public static final int PHONE_NUMBER_INDEX = 8;
+	public static final int ACCOUNT_TYPE_INDEX = 9;
+	public static final int ACCOUNT_BALANCE_INDEX = 10;
+	public static final int ACCOUNT_NUMBER_INDEX = 11;
+	public static final int CURRENT_ROW_INDEX = 12;
+
+
+	/**
+	 * This method gets the account data from an array list, and displays 
+	 * them in the appropriate Swing components.
+	 * Also 
+	 * @param accountData
+	 */
+	public void displayFoundData(ArrayList<String> accountData) {
+
+		deleteButton.setEnabled(true);
+		startAgainButton.setEnabled(true);
+
+		firstNameTextField.setText(accountData.get(FIRST_NAME_INDEX));
+		firstNameTextField.setEditable(true); 
+
+		lastNameTextField.setText(accountData.get(LAST_NAME_INDEX));
+		lastNameTextField.setEditable(true); 
+
+		if(accountData.get(GENDER_INDEX).equals(maleRadioButton.getActionCommand())) {
+			maleRadioButton.setSelected(true);    					
+		}
+		else if(accountData.get(GENDER_INDEX).equals(femaleRadioButton.getActionCommand())) {
+			femaleRadioButton.setSelected(true);    					
+		}	    				
+		maleRadioButton.setEnabled(true); 
+		femaleRadioButton.setEnabled(true);
+
+		dateOfBirthTextField.setText(accountData.get(DATE_OF_BIRTH_INDEX));
+		dateOfBirthTextField.setEditable(true);
+
+		if(accountData.get(MARITAL_STATUS_INDEX).equals(singleRadioButton.getActionCommand())) {
+			singleRadioButton.setSelected(true);    					
+		}
+		else if(accountData.get(MARITAL_STATUS_INDEX).equals(marriedRadioButton.getActionCommand())) {
+			marriedRadioButton.setSelected(true);    					
+		}
+		else if(accountData.get(MARITAL_STATUS_INDEX).equals(divorcedRadioButton.getActionCommand())) {
+			divorcedRadioButton.setSelected(true);
+		}
+		else {
+			widowedRadioButton.setSelected(true);
+		}    				
+		singleRadioButton.setEnabled(true);
+		marriedRadioButton.setEnabled(true);
+		divorcedRadioButton.setEnabled(true);
+		widowedRadioButton.setEnabled(true);
+
+		addressTextField1.setText(accountData.get(ADDRESS_LINE1_INDEX));
+		addressTextField1.setEditable(true); 
+		addressTextField2.setText(accountData.get(ADDRESS_LINE2_INDEX));
+		addressTextField2.setEditable(true); 
+		addressTextField3.setText(accountData.get(ADDRESS_LINE3_INDEX));
+		addressTextField3.setEditable(true); 
+
+		phoneNumberTextField.setText(accountData.get(PHONE_NUMBER_INDEX));
+		phoneNumberTextField.setEditable(true); 
+
+		if(accountData.get(ACCOUNT_TYPE_INDEX).equals(platinumRadioButton.getActionCommand())) {
+			platinumRadioButton.setSelected(true);
+		}
+		else if(accountData.get(ACCOUNT_TYPE_INDEX).equals(classicRadioButton.getActionCommand())) {
+			classicRadioButton.setSelected(true);
+		}
+		else if(accountData.get(ACCOUNT_TYPE_INDEX).equals(savingsRadioButton.getActionCommand())) {
+			savingsRadioButton.setSelected(true);
+		}
+		else {
+			studentRadioButton.setSelected(true);
+		}    				
+		platinumRadioButton.setEnabled(true);
+		classicRadioButton.setEnabled(true);
+		savingsRadioButton.setEnabled(true);
+		studentRadioButton.setEnabled(true);
+
+		updateAccountButton.setEnabled(true); 
+
+		balance = Double.parseDouble(accountData.get(ACCOUNT_BALANCE_INDEX));
+		accountNum = accountData.get(ACCOUNT_NUMBER_INDEX);
+
+		/* Assign a new value to currentRow. This is needed so the controller bean knows 
+		from which row to delete the account (if we wanted to delete it) */
+		currentRow = Integer.parseInt(accountData.get(CURRENT_ROW_INDEX));				
+	}	
+
+	/**
+	 * Clears all swing components and sets them disabled/not editable,
+	 * so that a new account can be searched in the search text field.
+	 */    
+	public void clearAll() {
+		searchTextField.setText("");
+		deleteButton.setEnabled(false);
+		startAgainButton.setEnabled(false);
+		firstNameTextField.setText("");
+		firstNameTextField.setEditable(false);
+		lastNameTextField.setText("");
+		lastNameTextField.setEditable(false);
+		genderGroup.clearSelection();
+		maleRadioButton.setEnabled(false);
+		femaleRadioButton.setEnabled(false); 
+		dateOfBirthTextField.setText("");
+		dateOfBirthTextField.setEditable(false);           
+		maritalStatusGroup.clearSelection();
+		singleRadioButton.setEnabled(false); 
+		marriedRadioButton.setEnabled(false); 
+		divorcedRadioButton.setEnabled(false); 
+		widowedRadioButton.setEnabled(false);             
+		addressTextField1.setText("");
+		addressTextField1.setEditable(false); 
+		addressTextField2.setText("");
+		addressTextField2.setEditable(false); 
+		addressTextField3.setText("");
+		addressTextField3.setEditable(false); 
+		phoneNumberTextField.setText("");
+		phoneNumberTextField.setEditable(false); 
+		accountTypeGroup.clearSelection();
+		platinumRadioButton.setEnabled(false); 
+		classicRadioButton.setEnabled(false); 
+		savingsRadioButton.setEnabled(false);
+		studentRadioButton.setEnabled(false);
+		updateAccountButton.setEnabled(false);
+	}
+}
